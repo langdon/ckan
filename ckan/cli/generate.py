@@ -161,7 +161,17 @@ def make_config(output_path: str, include_plugin: list[str]):
     for plugin in include_plugin:
         config_declaration.load_plugin(plugin)
 
-    variables = {"declaration": config_declaration.into_ini(False, False)}
+    variables = {
+        "app_main_section": config_declaration.into_ini(
+            minimal=False,
+            include_docs=False,
+        ),
+        "default_section": config_declaration.into_ini(
+            minimal=False,
+            include_docs=True,
+            section="DEFAULT"
+        )
+    }
     with open(template_loc, u'r') as file_in:
         template = string.Template(file_in.read())
         try:
@@ -204,7 +214,7 @@ def migration(plugin: str, message: str):
 
 
 _factories = {
-    "activity": "ckan.tests.factories:Activity",
+    "activity": "ckanext.activity.tests.conftest:ActivityFactory",
     "api-token": "ckan.tests.factories:APIToken",
     "dataset": "ckan.tests.factories:Dataset",
     "group": "ckan.tests.factories:Group",
@@ -240,16 +250,18 @@ def fake_data(ctx: click.Context, category: Optional[str],
 
     For instance:
 
-         ckan generate fake-data dataset
-         ckan generate fake-data dataset  --title="My test dataset"
-
-         ckan generate fake-data dataset \
-                 --factory-class=ckanext.myext.tests.factories.MyCustomDataset
+    \b
+        ckan generate fake-data dataset
+        ckan generate fake-data dataset  --title="My test dataset"
+        ckan generate fake-data dataset \\
+            -f ckanext.myext.tests.factories.MyCustomDataset
 
     All the validation rules still apply. For example, if you have
     `ckan.auth.create_unowned_dataset` config option set to `False`,
     `--owner_org` must be supplied:
 
+    \b
+        # use jq to obtain ID of the new organization
         owner_org=$(ckan generate fake-data organization | jq .id -r)
         ckan generate fake-data dataset  --owner_org=$owner_org
 

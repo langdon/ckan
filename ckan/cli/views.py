@@ -40,10 +40,10 @@ def views():
 def create(ctx: click.Context, types: list[str], dataset: list[str],
            no_default_filters: bool, search: str, yes: bool):
     """Create views on relevant resources. You can optionally provide
-    specific view types (eg `recline_view`, `image_view`). If no types
+    specific view types (eg `datatables_view`, `image_view`). If no types
     are provided, the default ones will be used. These are generally
     the ones defined in the `ckan.views.default_views` config option.
-    Note that on either case, plugins must be loaded (ie added to
+    Note that in either case, plugins must be loaded (ie added to
     `ckan.plugins`), otherwise the command will stop.
 
     """
@@ -167,9 +167,10 @@ def clean(ctx: click.Context, yes: bool):
     for row in results:
         click.secho(u"%s of type %s" % (row[1], row[0]))
 
-    yes or click.confirm(
-        u"Do you want to delete these resource views?", abort=True
-    )
+    if not yes:
+        click.confirm(
+            u"Do you want to delete these resource views?", abort=True
+        )
 
     model.ResourceView.delete_not_in_view_types(names)
     model.Session.commit()
